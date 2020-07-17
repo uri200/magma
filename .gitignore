@@ -82,3 +82,6 @@ devmand/gateway/cmake-build-debug/
 # Cscope and tags
 cscope.*
 tags
+
+#intellij
+.idea/
