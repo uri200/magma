@@ -75,6 +75,9 @@ func fillIn(vs *reflect.Value, vd *reflect.Value) int {
 		if ks == reflect.Struct && kd == reflect.Struct {
 			count = convertStruct(vs, vd)
 		}
+		if ks == reflect.Slice && kd == reflect.Slice {
+			count = convertSlice(vs, vd)
+		}
 		if ks == reflect.Map && kd == reflect.Map {
 			count = convertMap(vs, vd)
 		}
@@ -126,6 +129,32 @@ func convertStruct(vs *reflect.Value, vd *reflect.Value) int {
 		if fs.Kind() == vdf.Kind() || fs.Type().ConvertibleTo(ftd.Type) {
 			count += fillIn(&fs, &vdf)
 		}
+	}
+	return count
+}
+
+func convertSlice(vs *reflect.Value, vd *reflect.Value) int {
+	count := 0
+	if vs.Len() > 0 {
+		vd.Set(reflect.MakeSlice(vd.Type(), 0, vs.Len()))
+	}
+	for i := 0; i < vs.Len(); i++ {
+		sliceVal := vs.Index(i)
+		if sliceVal.Kind() == reflect.Ptr {
+			if sliceVal.IsNil() {
+				continue
+			}
+			sliceVal = sliceVal.Elem()
+		}
+		copyVal := reflect.New(vd.Type().Elem()).Elem()
+		if copyVal.Kind() == reflect.Ptr {
+			copyValObj := reflect.New(copyVal.Type().Elem()).Elem()
+			count += fillIn(&sliceVal, &copyValObj)
+			copyVal.Set(copyValObj.Addr())
+		} else {
+			count += fillIn(&sliceVal, &copyVal)
+		}
+		vd.Set(reflect.Append(*vd, copyVal))
 	}
 	return count
 }

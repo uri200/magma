@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package protos_test
 
 import (
+	"reflect"
 	"testing"
 
 	"magma/orc8r/lib/go/protos"
@@ -17,6 +18,7 @@ import (
 )
 
 func TestOverlapFillIn(t *testing.T) {
+
 	type Embeded1 struct {
 		a, B, C int
 	}
@@ -33,22 +35,32 @@ func TestOverlapFillIn(t *testing.T) {
 		MixEdCaSe  string
 		mixEdCaSe1 string
 		MixEdCaSe2 string
+		SL1        []Embeded1
+		SL2        []*Embeded2
+		SL3		   []*Embeded1
 		M          map[string]Embeded1
 		M1         map[string]*Embeded1
 		M2         map[string]Embeded1
+		MSL3	   map[string][]Embeded1
+		MSL4       map[string][]*Embeded2
 	}
 
 	type S_B struct {
-		I          int
 		S1         string
-		hidden     bool
+		I          int
 		E          Embeded2
+		hidden     bool
 		MiXedCase  string
 		MiXedCase1 string
 		miXedCase2 string
+		SL1        []Embeded1
+		SL2        []*Embeded2
+		SL3		   []*Embeded1
 		M          map[string]*Embeded2
 		M1         map[string]*Embeded1
 		M2         map[string]Embeded1
+		MSL3	   map[string][]Embeded1
+		MSL4       map[string][]*Embeded2
 	}
 
 	type TestInitStr1 struct {
@@ -76,14 +88,38 @@ func TestOverlapFillIn(t *testing.T) {
 
 	a := S_A{"str1", 1, Embeded1{1, 2, 3}, true, "str2",
 		"bla Bla bla", "bla1", "bla2",
-		map[string]Embeded1{}, map[string]*Embeded1{}, nil}
-	b := S_B{11, "str3", false, Embeded2{111, 222, 333},
+		[]Embeded1{},
+		[]*Embeded2{{7, 8, 9} },
+		nil,
+		map[string]Embeded1{},
+		map[string]*Embeded1{},
+		nil,
+		map[string][]Embeded1{"key1": {{4, 5, 6}}},
+		map[string][]*Embeded2{"key1": {{4, 5, 6}}},
+	}
+
+	b := S_B{ "str3", 11, Embeded2{111, 222, 333},  false,
 		"Foo bar", "foo1", "foo2",
+		[]Embeded1{{1, 2, 3}, {4, 5, 6}},
+		[]*Embeded2{ {1, 2, 3} , {4, 5, 6}},
+		[]*Embeded1{ {1, 2, 3} , {4, 5, 6}},
 		map[string]*Embeded2{"key": &Embeded2{1, 2, 3}},
 		map[string]*Embeded1{"key": &Embeded1{1, 2, 3}},
-		map[string]Embeded1{"key": Embeded1{1, 2, 3}}}
+		map[string]Embeded1{"key": Embeded1{1, 2, 3}},
+		map[string][]Embeded1{"key1": {{1, 2, 3}}},
+		map[string][]*Embeded2{"key2": {{1, 2, 3}}},
+	}
 
-	count := protos.FillIn(&b, &a)
+
+	//src := []*Embeded1{{1, 2, 3}}
+	//dst := []*Embeded1{}
+
+	src := map[string]int{"key1": 1}
+	dst := map[string]int{}
+
+	protos.FillIn(src, dst)
+
+	count := protos.FillIn(b, a)
 	if count <= 0 || a.I != b.I || a.S1 != b.S1 || a.S != "str1" || b.I != 11 ||
 		a.hidden == b.hidden || a.E.C != b.E.C || a.E.a != 1 || a.E.B != 2 ||
 		a.MixEdCaSe != b.MiXedCase || a.mixEdCaSe1 == b.MiXedCase1 || a.MixEdCaSe2 == b.miXedCase2 ||
@@ -92,6 +128,28 @@ func TestOverlapFillIn(t *testing.T) {
 		len(a.M2) != 1 || a.M2["key"].a != 1 || a.M2["key"].B != 2 || a.M2["key"].C != 3 {
 
 		t.Fatalf("Invalid assignment:\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
+			count, a, b)
+	}
+
+	// slice checks
+	if !reflect.DeepEqual(a.SL1, []Embeded1{ {1, 2, 3}, {4, 5, 6}} ) {
+		t.Fatalf("Invalid assignment on slices 1:\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
+			count, a, b)
+	}
+	if !reflect.DeepEqual(a.SL2, []*Embeded2{ {1, 2, 3} , {4, 5, 6}}) {
+		t.Fatalf("Invalid assignment checking slices 2 (pointer):\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
+			count, a, b)
+	}
+	if !reflect.DeepEqual(a.SL3, []*Embeded1{ {1, 2, 3} , {4, 5, 6}}) 	{
+		t.Fatalf("Invalid assignment checking slices 2 (dst nil):\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
+			count, a, b)
+	}
+	if !reflect.DeepEqual(a.MSL3, map[string][]Embeded1{"key1": {{1, 2, 3}}}) {
+		t.Fatalf("Invalid assignment checking map of slices 1:\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
+			count, a, b)
+	}
+	if !reflect.DeepEqual(a.MSL4, map[string][]*Embeded2{"key2": {{1, 2, 3}}}) {
+		t.Fatalf("Invalid assignment checking map of slices 2 (pointer):\n\tcount: %d\n\ta: %+#v\n\tb: %+#v\n",
 			count, a, b)
 	}
 

@@ -17,13 +17,11 @@ import (
 	"magma/orc8r/lib/go/protos"
 	"magma/orc8r/lib/go/protos/mconfig"
 
-	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
-	"github.com/thoas/go-funk"
 )
 
 type BaseOrchestratorMconfigBuilder struct{}
@@ -240,14 +238,6 @@ func (s *DnsdMconfigBuilderServicer) Build(
 	mconfigDnsd.LocalTTL = int32(swag.Uint32Value(dnsConfig.LocalTTL))
 	mconfigDnsd.EnableCaching = swag.BoolValue(dnsConfig.EnableCaching)
 	mconfigDnsd.LogLevel = protos.LogLevel_INFO
-	for _, record := range dnsConfig.Records {
-		mconfigRecord := &mconfig.NetworkDNSConfigRecordsItems{}
-		protos.FillIn(record, mconfigRecord)
-		mconfigRecord.ARecord = funk.Map(record.ARecord, func(a strfmt.IPv4) string { return string(a) }).([]string)
-		mconfigRecord.AaaaRecord = funk.Map(record.AaaaRecord, func(a strfmt.IPv6) string { return string(a) }).([]string)
-		mconfigDnsd.Records = append(mconfigDnsd.Records, mconfigRecord)
-	}
-
 	ret.ConfigsByKey["dnsd"], err = ptypes.MarshalAny(mconfigDnsd)
 	return ret, err
 }

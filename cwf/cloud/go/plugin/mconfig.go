@@ -190,12 +190,12 @@ func buildFromConfigs(nwConfig *models.NetworkCarrierWifiConfigs, gwConfig *mode
 			IcmpProbePktCount:   healthCfg.IcmpProbePktCount,
 		}
 		protos.FillIn(healthCfg, mc)
-		mc.GrePeers = getHealthServiceGrePeers(allowedGrePeers)
+		protos.FillIn(&allowedGrePeers, &(mc.GrePeers))
 		ret["health"] = mc
 	} else {
-		mc := &cwfmconfig.CwfGatewayHealthConfig{
-			GrePeers: getHealthServiceGrePeers(allowedGrePeers),
-		}
+		mc := &cwfmconfig.CwfGatewayHealthConfig{}
+		// TODO: delete getHealthServiceGrePeers
+		protos.FillIn(&allowedGrePeers, &(mc.GrePeers))
 		ret["health"] = mc
 	}
 	return ret, err
