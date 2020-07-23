@@ -154,7 +154,6 @@ StoredChargingGrant deserialize_stored_charging_grant(
       std::stoul(marshaled["expiry_time"].getString()));
   stored.credit =
       deserialize_stored_session_credit(marshaled["credit"].getString());
-
   return stored;
 }
 
@@ -170,7 +169,8 @@ std::string serialize_stored_session_credit(StoredSessionCredit& stored) {
     marshaled["buckets"][std::to_string(bucket_int)] =
         std::to_string(stored.buckets[bucket]);
   }
-
+  marshaled["received_granted_units_"] =
+      serialize_received_granted_units(stored.received_granted_units);
   std::string serialized = folly::toJson(marshaled);
   return serialized;
 }
@@ -191,7 +191,32 @@ StoredSessionCredit deserialize_stored_session_credit(
     stored.buckets[bucket] = static_cast<uint64_t>(std::stoul(
         marshaled["buckets"][std::to_string(bucket_int)].getString()));
   }
+  stored.received_granted_units =
+      deserialize_received_granted_units(
+          marshaled["received_granted_units_"].getString());
+  return stored;
+}
 
+std::string serialize_received_granted_units(ReceivedGrantedUnits& stored) {
+  folly::dynamic marshaled = folly::dynamic::object;
+  marshaled["total_volume"] = std::to_string(stored.total_volume);
+  marshaled["rx_volume"] = std::to_string(stored.rx_volume);
+  marshaled["tx_volume"] = std::to_string(stored.tx_volume);
+  std::string serialized = folly::toJson(marshaled);
+  return serialized;
+}
+
+ReceivedGrantedUnits deserialize_received_granted_units(
+    const std::string& serialized) {
+  auto folly_serialized    = folly::StringPiece(serialized);
+  folly::dynamic marshaled = folly::parseJson(folly_serialized);
+  auto stored = ReceivedGrantedUnits{};
+  stored.total_volume = static_cast<uint64_t>
+      (std::stoul(marshaled["total_volume"].getString()));
+  stored.rx_volume = static_cast<uint64_t>
+      (std::stoul(marshaled["rx_volume"].getString()));
+  stored.tx_volume = static_cast<uint64_t>
+      (std::stoul(marshaled["tx_volume"].getString()));
   return stored;
 }
 

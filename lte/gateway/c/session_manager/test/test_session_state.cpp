@@ -135,6 +135,14 @@ class SessionStateTest : public ::testing::Test {
     session_state->receive_charging_credit(charge_resp, update_criteria);
   }
 
+  void receive_credit_from_ocs(uint32_t rating_group, uint64_t total_volume,
+                               uint64_t tx_volume,uint64_t rx_volume, bool is_final) {
+    CreditUpdateResponse charge_resp;
+    create_credit_update_response("IMSI1", rating_group,total_volume, tx_volume,
+                                  rx_volume, is_final, &charge_resp);
+    session_state->receive_charging_credit(charge_resp, update_criteria);
+  }
+
   void receive_credit_from_pcrf(
       const std::string& mkey, uint64_t volume, MonitoringLevel level) {
     UsageMonitoringUpdateResponse monitor_resp;
@@ -890,6 +898,66 @@ TEST_F(SessionStateTest, test_empty_credit_grant) {
   session_state->add_rule_usage("rule1", 100, 100, update_criteria);
   auto credit_uc = update_criteria.charging_credit_map[1];
   EXPECT_EQ(credit_uc.service_state, SERVICE_NEEDS_DEACTIVATION);
+}
+
+TEST_F(SessionStateTest, test_multiple_final_action_empty_grant) {
+  // add one rule with credites
+  insert_rule(1, "", "rule1", STATIC, 0, 0);
+  EXPECT_TRUE(
+      std::find(
+          update_criteria.static_rules_to_install.begin(),
+          update_criteria.static_rules_to_install.end(),
+          "rule1") != update_criteria.static_rules_to_install.end());
+
+  receive_credit_from_ocs(1, 3000, 2000, 2000, false);
+  EXPECT_EQ(update_criteria.charging_credit_to_install.size(), 1);
+  EXPECT_EQ(
+      update_criteria.charging_credit_to_install[CreditKey(1)]
+          .credit.buckets[ALLOWED_TOTAL],3000);
+  EXPECT_EQ(
+      update_criteria.charging_credit_to_install[CreditKey(1)]
+          .credit.buckets[ALLOWED_TX],2000);
+  EXPECT_EQ(
+      update_criteria.charging_credit_to_install[CreditKey(1)]
+          .credit.buckets[ALLOWED_RX],2000);
+
+  // add usage for 2 times to go over quota
+  session_state->add_rule_usage("rule1", 2000, 1000, update_criteria);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_TX), 2000);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_RX), 1000);
+
+  session_state->add_rule_usage("rule1", 2000, 1000, update_criteria);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_TX), 4000);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_RX), 2000);
+
+  // check if we need to report the usage
+  UpdateSessionRequest update;
+  std::vector<std::unique_ptr<ServiceAction>> actions;
+  session_state->get_updates(update, &actions, update_criteria);
+  EXPECT_EQ(actions.size(), 0);
+  EXPECT_EQ(update.updates_size(), 1);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].bucket_deltas[USED_TX],4000);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].bucket_deltas[USED_RX], 2000);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].service_state, SERVICE_ENABLED);
+  EXPECT_FALSE(update_criteria.charging_credit_map[CreditKey(1)].is_final);
+  EXPECT_TRUE(update_criteria.charging_credit_map[CreditKey(1)].reporting);
+
+  // recive final unit without grant
+  receive_credit_from_ocs(1, 0, 0, 0, true);
+  EXPECT_EQ(update_criteria.charging_credit_to_install.size(), 1);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].bucket_deltas[REPORTED_TX], 4000);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].bucket_deltas[REPORTED_RX], 2000);
+  EXPECT_TRUE(update_criteria.charging_credit_map[CreditKey(1)].is_final);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].service_state, SERVICE_ENABLED);
+  EXPECT_FALSE(update_criteria.charging_credit_map[CreditKey(1)].reporting);
+
+  // force to check for the state (no traffic sent)
+  session_state->add_rule_usage("rule1", 0, 0, update_criteria);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_TX), 4000);
+  EXPECT_EQ(session_state->get_charging_credit(1, USED_RX), 2000);
+  EXPECT_TRUE(update_criteria.charging_credit_map[CreditKey(1)].is_final);
+  EXPECT_EQ(update_criteria.charging_credit_map[CreditKey(1)].service_state, SERVICE_NEEDS_DEACTIVATION);
+  EXPECT_FALSE(update_criteria.charging_credit_map[CreditKey(1)].reporting);
 }
 
 int main(int argc, char** argv) {

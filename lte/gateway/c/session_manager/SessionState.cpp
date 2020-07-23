@@ -929,6 +929,8 @@ void SessionState::merge_charging_credit_update(
   // Credit merging
   credit.set_grant_tracking_type(
       credit_update.grant_tracking_type, credit_update);
+  credit.set_received_granted_units(credit_update.received_granted_units,
+                                    credit_update);
   for (int i = USED_TX; i != MAX_VALUES; i++) {
     Bucket bucket = static_cast<Bucket>(i);
     credit.add_credit(

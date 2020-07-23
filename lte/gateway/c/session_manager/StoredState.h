@@ -53,6 +53,10 @@ struct FinalActionInfo {
   RedirectServer redirect_server;
 };
 
+struct ReceivedGrantedUnits {
+  uint64_t total_volume, tx_volume, rx_volume;
+};
+
 enum EventTriggerState {
   PENDING   = 0, // trigger installed
   READY     = 1, // ready to be reported on
@@ -98,6 +102,7 @@ enum GrantTrackingType {
   TX_ONLY = 1,
   RX_ONLY = 2,
   TX_AND_RX = 3,
+  ALL_TOTAL_TX_RX = 4,
 };
 
 /**
@@ -140,6 +145,7 @@ struct StoredSessionCredit {
   CreditLimitType credit_limit_type;
   std::unordered_map<Bucket, uint64_t> buckets;
   GrantTrackingType grant_tracking_type;
+  ReceivedGrantedUnits received_granted_units;
 };
 
 struct StoredMonitor {
@@ -201,6 +207,7 @@ struct SessionCreditUpdateCriteria {
   GrantTrackingType grant_tracking_type;
   // Do not mark REPORTING buckets, but do mark REPORTED
   std::unordered_map<Bucket, uint64_t> bucket_deltas;
+  ReceivedGrantedUnits received_granted_units;
 };
 
 struct SessionStateUpdateCriteria {
@@ -256,6 +263,11 @@ std::string serialize_stored_session_credit(StoredSessionCredit &stored);
 
 StoredSessionCredit
 deserialize_stored_session_credit(const std::string &serialized);
+
+std::string serialize_received_granted_units(ReceivedGrantedUnits& stored);
+
+ReceivedGrantedUnits deserialize_received_granted_units(
+    const std::string& serialized);
 
 std::string serialize_stored_charging_grant(StoredChargingGrant &stored);
 

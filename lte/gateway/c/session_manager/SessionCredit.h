@@ -90,6 +90,9 @@ public:
   void set_grant_tracking_type(GrantTrackingType g_type,
     SessionCreditUpdateCriteria& uc);
 
+  void set_received_granted_units(
+      ReceivedGrantedUnits& rgu, SessionCreditUpdateCriteria& uc);
+
   /**
    * Add credit to the specified bucket. This does not necessarily correspond
    * to allowed or used credit.
@@ -136,6 +139,8 @@ private:
   bool reporting_;
   CreditLimitType credit_limit_type_;
   GrantTrackingType grant_tracking_type_;
+  // stores the granted credits we received the last
+  ReceivedGrantedUnits received_granted_units_;
 
 private:
   void log_quota_and_usage() const;
@@ -147,7 +152,7 @@ private:
   GrantTrackingType determine_grant_tracking_type(const GrantedUnits& grant);
 
   bool compute_quota_exhausted(const uint64_t allowed,
-    const uint64_t reported, const uint64_t used, float threshold_ratio) const;
+    const uint64_t used, float threshold_ratio, const uint64_t grantedUnits) const;
 
   uint64_t compute_reporting_limit(
     const uint64_t allowed, const uint64_t reported) const;
