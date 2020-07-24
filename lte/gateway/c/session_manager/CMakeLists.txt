@@ -70,6 +70,15 @@ set(SMGR_LTE_CPP_PROTOS session_manager subscriberdb policydb
 generate_cpp_protos("${SMGR_LTE_CPP_PROTOS}" "${PROTO_SRCS}"
   "${PROTO_HDRS}" ${LTE_PROTO_DIR} ${LTE_CPP_OUT_DIR})
 
+message("files_is ${SMGR_LTE_CPP_PROTOS}")
+message("lte_proto_dir ${LTE_PROTO_DIR}")
+message("lte_cpp_out_dir ${LTE_CPP_OUT_DIR}")
+message("proto_src ${PROTO_SRCS}")
+message("proto hdrs  ${PROTO_HDRS}")
+
+
+
+
 set(SMGR_CWF_CPP_PROTOS accounting context)
 generate_cwf_cpp_protos("${SMGR_CWF_CPP_PROTOS}" "${PROTO_SRCS}"
   "${PROTO_HDRS}" ${CWF_PROTO_DIR} ${CWF_CPP_OUT_DIR})

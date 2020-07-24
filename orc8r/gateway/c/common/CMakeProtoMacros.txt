@@ -59,6 +59,13 @@ macro(generate_cpp_protos PROTO_NAME_LIST PROTO_SRCS PROTO_HDRS IN_DIR OUT_DIR)
     list(APPEND PROTO_SRCS "${OUT_DIR}/${PROTO_NAME}.pb.cc")
     list(APPEND PROTO_HDRS "${OUT_DIR}/${PROTO_NAME}.pb.h")
 
+    message("protobuf executable path  ${PROTOBUF_PROTOC_EXECUTABLE}")
+    message("prometheus path  ${PROMETHEUS_PATH}")
+    message("magma root   ${MAGMA_ROOT}")
+    message("proto path  ${MAGMA_ROOT}")
+    message("xcurrent binary dir in dir" ${CMAKE_CURRENT_BINARY_DIR})
+    message("depends in dir" ${IN_DIR}/${PROTO_NAME})
+
     add_custom_command(
       OUTPUT "${OUT_DIR}/${PROTO_NAME}.pb.h"
              "${OUT_DIR}/${PROTO_NAME}.pb.cc"
@@ -67,7 +74,20 @@ macro(generate_cpp_protos PROTO_NAME_LIST PROTO_SRCS PROTO_HDRS IN_DIR OUT_DIR)
       --cpp_out=${CMAKE_CURRENT_BINARY_DIR} ${IN_DIR}/${PROTO_NAME}.proto
       DEPENDS ${IN_DIR}/${PROTO_NAME}.proto ${PROTOBUF_PROTOC_EXECUTABLE}
       COMMENT "Running C++ protobuf compiler on ${IN_DIR}/${PROTO_NAME}.proto"
+      OUTPUT_VARIABddLE OUT_VAR
+      ERROR_VARIABLE ERR_VAR
+      RESULT_VARIABLE RETURN_VALUE
       VERBATIM )
+    message("------")
+    #string(STRIP ${OUT_VAR} OUT_VAR)
+    message("out_var " ${OUT_VAR})
+    #string(STRIP ${ERR_VAR} ERR_VAR)
+    message("err_var " ${ERR_VAR})
+    message("return_var" ${RETURN_VALUE})
+    message("------")
+    message("depends in dir" ${IN_DIR}/${PROTO_NAME})
+
+
   endforeach()
 endmacro()
 
