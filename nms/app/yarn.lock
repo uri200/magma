@@ -1424,10 +1424,10 @@
     morgan "^1.9.1"
     winston "^3.0.0"
 
-"@fbcnms/platform-server@^0.1.16":
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/@fbcnms/platform-server/-/platform-server-0.1.16.tgz#c3e63b365a197a6046041796c89019754a7a18b4"
-  integrity sha512-IgzDgpXeGZfthS6Xy8VEp398HdNifyj4f9GxFsNpPpozUCFr5c6n4hc9iLfFGUnrB18tegaDBb6mv6KAm7GDeQ==
+"@fbcnms/platform-server@^0.1.20":
+  version "0.1.20"
+  resolved "https://registry.yarnpkg.com/@fbcnms/platform-server/-/platform-server-0.1.20.tgz#2ee83a9bd78c8a887177a1ec45bc1983bc742617"
+  integrity sha512-6USSsWnfPU2efwBVjq1KB+HXuA10I3s6pemlqd9gX7Pl/zh5fgqHY55BuLxnIXut7Mi2i0IhQhAa5+0//210oA==
   dependencies:
     "@fbcnms/auth" "^0.1.0"
     "@fbcnms/babel-register" "^0.1.0"
@@ -1435,7 +1435,7 @@
     "@fbcnms/logging" "^0.1.0"
     "@fbcnms/magma-api" "^0.1.0"
     "@fbcnms/sequelize-models" "^0.1.0"
-    "@fbcnms/types" "^0.1.2"
+    "@fbcnms/types" "^0.1.9"
     "@fbcnms/util" "^0.1.0"
     add "^2.0.6"
     axios "^0.18.0"
@@ -1476,10 +1476,10 @@
   resolved "https://registry.yarnpkg.com/@fbcnms/strings/-/strings-0.1.0.tgz#50dae22b4cb7cb7d1a30c013d0b40c96b741a1f1"
   integrity sha512-w1Z12YAhufVCsKL1lcO4+wwfwnQPwaLZyE5jjt36yg/2fcCRrpv55r3V+7M/VDc8wDOK4yRgJwiwEuOPrrwfKw==
 
-"@fbcnms/types@^0.1.2", "@fbcnms/types@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@fbcnms/types/-/types-0.1.5.tgz#57a472935c717fae191957ccd820efeaca484018"
-  integrity sha512-4ERRyRUMNrDCEC4tbgzNJmuu/q/0182Aw9OjLThsGiewVK8mTvvQ28CtkcJVhkbXxi1m+kXihTzh+/y+2BPVHQ==
+"@fbcnms/types@^0.1.5", "@fbcnms/types@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@fbcnms/types/-/types-0.1.9.tgz#14060c43417152f9a85c6556b0ba6821218a743a"
+  integrity sha512-wi56UYishqdiKREQeyvOoL2wJqVfnK8tyRbAJvkl5h3QsX4S2zBA7hzI6DirVZ6r4/Q9gwN+D5ZlStCWO3aKSQ==
 
 "@fbcnms/ui@^0.1.7":
   version "0.1.7"
