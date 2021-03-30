@@ -1,4 +1,4 @@
-# Note: You can use any Debian/Ubuntu based image you want. 
+# Note: You can use any Debian/Ubuntu based image you want.
 FROM ubuntu:focal as magma-mme-builder
 
 # [Option] Install zsh
@@ -23,8 +23,8 @@ RUN apt-get update \
     # Clean up
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/
 
-# Setting the ENTRYPOINT to docker-init.sh will configure non-root access to 
-# the Docker socket if "overrideCommand": false is set in devcontainer.json. 
+# Setting the ENTRYPOINT to docker-init.sh will configure non-root access to
+# the Docker socket if "overrideCommand": false is set in devcontainer.json.
 # The script will also execute CMD if you need to alter startup behaviors.
 ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
@@ -226,7 +226,7 @@ RUN git clone https://github.com/facebook/folly && cd folly && \
     make install && \
     cd / && \
     rm -rf folly
-    
+
 ##### Build and install libgtest and gmock
 RUN cd /usr/src/googletest && \
     mkdir build && \
@@ -256,3 +256,48 @@ COPY third_party /tmp/third_party/
 RUN /tmp/third_party/build/bin/libfluid_build.sh && \
      find . -name magma-libfluid_0.1* -exec dpkg -i {} \; && \
      rm -rf /tmp/*
+
+
+
+
+
+
+### orc8r
+ENV GO111MODULE on
+ENV GOPATH ${USER}/go
+ENV GOBIN /build/bin
+ENV PATH ${PATH}:${GOBIN}:${GOPATH}/bin
+
+
+
+RUN cd / && \
+    mkdir "${GOPATH}" && \
+    chown vscode -R "${GOPATH}" && \
+    mkdir gomod && \
+    chown vscode -R gomod && \
+    mkdir -p "${GOBIN}" && \
+    chown vscode -R "${GOBIN}"
+
+# Apt runtime deps
+RUN apt-get update && apt-get install -y \
+  bzr
+
+# Golang 1.13
+WORKDIR /usr/local
+RUN curl https://facebookconnectivity.jfrog.io/artifactory/generic/go1.13.4.linux-amd64.tar.gz -O && \
+    tar xf go1.13.4.linux-amd64.tar.gz && \
+    cp -r go/bin/* /usr/local/bin/
+
+# Protobuf compiler
+# Apt has 2.x but we need 3.x
+# See: https://grpc.io/docs/protoc-installation/
+RUN curl -Lfs https://github.com/google/protobuf/releases/download/v3.1.0/protoc-3.1.0-linux-x86_64.zip -o protoc3.zip && \
+    unzip protoc3.zip -d protoc3 && \
+    mv protoc3/bin/protoc /bin/protoc && \
+    chmod a+rx /bin/protoc && \
+    mv protoc3/include/google /usr/include/ && \
+    chmod -R a+Xr /usr/include/google && \
+    rm -rf protoc3.zip protoc3
+
+
+
